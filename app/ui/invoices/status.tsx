@@ -1,4 +1,5 @@
 import { CheckIcon, ClockIcon } from '@heroicons/react/24/outline';
+// clsx es una libreria para manejar clases condicionales
 import clsx from 'clsx';
 
 export default function InvoiceStatus({ status }: { status: string }) {
