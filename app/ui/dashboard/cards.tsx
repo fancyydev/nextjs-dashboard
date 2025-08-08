@@ -29,7 +29,8 @@ export default async function CardWrapper() {
     </>
   );
 }
-
+// Nosotros aqui indicamos los parametros en conjunto con ciertas restricciones de tipo 
+// y de valores
 export function Card({
   title,
   value,

@@ -2,26 +2,69 @@ import postgres from 'postgres';
 import {
   CustomerField,
   CustomersTableType,
+  Invoice,
   InvoiceForm,
   InvoicesTable,
   LatestInvoiceRaw,
   Revenue,
+  TotalData
 } from './definitions';
 import { formatCurrency } from './utils';
 
 const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
+export async function fetchTotalPaidInvoices() {
+  try {
+    const data = await sql`select sum(amount) from invoices where status = 'paid'`;
+    return data[0]['sum'];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch revenue data.');
+  }
+}
+
+export async function fetchTotalPendingInvoices() {
+  try {
+    const data = await sql`select sum(amount) from invoices where status = 'pending'`;
+    return data[0]['sum'];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch revenue data.');
+  }
+}
+
+export async function fetchTotalInvoices() {
+  try {
+    const data = await sql`select count(*) from invoices`;
+    return data[0]['count'];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch revenue data.');
+  }
+}
+
+export async function fetchTotalCustomers() {
+  try {
+    const data = await sql`select count(*) from customers`;
+    return data[0]['count'];
+  } catch (error) {
+    console.error('Database Error:', error);
+    throw new Error('Failed to fetch revenue data.');
+  }
+}
+
 
 export async function fetchRevenue() {
   try {
     // Artificially delay a response for demo purposes.
     // Don't do this in production :)
 
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
+    console.log('Fetching revenue data...');
+    await new Promise((resolve) => setTimeout(resolve, 3000));
 
     const data = await sql<Revenue[]>`SELECT * FROM revenue`;
 
-    // console.log('Data fetch completed after 3 seconds.');
+    console.log('Data fetch completed after 3 seconds.');
 
     return data;
   } catch (error) {
@@ -61,7 +104,8 @@ export async function fetchCardData() {
          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
          FROM invoices`;
-
+    // Esto realiza las peticiones de manera paralela y no en cascada como normalmente
+    // se harian con javascript
     const data = await Promise.all([
       invoiceCountPromise,
       customerCountPromise,
